@@ -1,0 +1,46 @@
+version: '3.9'
+services:
+  app:
+    container_name: auth-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 80:8080
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:3306/${MYSQL_DATABASE}
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - files-data:/files
+    networks:
+      - springboot-mysql-network
+
+  mysqldb:
+    image: mysql:8.0.33
+    container_name: auth-db
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - springboot-mysql-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      retries: 10
+      interval: 3s
+      timeout: 30s
+
+volumes:
+  mysql-data:
+  files-data:
+
+networks:
+  springboot-mysql-network:
+    name: springboot-mysql-network
