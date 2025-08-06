@@ -1,5 +1,6 @@
 package com.example.authservice.models.responses;
 
+import com.example.authservice.models.ERole;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import java.util.UUID;
@@ -15,4 +16,5 @@ public class JwtResponse {
     private String gender;
     private String name;
     private String phoneNumber;
+    private ERole role;
 }

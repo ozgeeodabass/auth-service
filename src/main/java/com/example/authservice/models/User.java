@@ -44,7 +44,12 @@ public class User {
     private String phoneNumber;
     private boolean deleted;
 
-    public User(UUID id, String username, String email, String password, String gender, String name, String phoneNumber, boolean deleted) {
+    @JoinColumn(name = "role_id", referencedColumnName = "id")
+    @Column(name = "role",nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ERole role;
+
+    public User(UUID id, String username, String email, String password, String gender, String name, String phoneNumber, boolean deleted, ERole role) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -53,15 +58,17 @@ public class User {
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.deleted = deleted;
+        this.role = role;
     }
 
-    public User(String username, String email, String password, String gender, String name, String phoneNumber) {
+    public User(String username, String email, String password, String gender, String name, String phoneNumber, ERole role) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.gender = gender;
         this.name = name;
         this.phoneNumber = phoneNumber;
+        this.role = role;
     }
 }
 
