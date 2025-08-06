@@ -49,8 +49,10 @@ public final class JwtUtils {
     //validates the structure and signature of the JWT token
     public boolean validateJwtToken(String authToken) {
         try {
-            Jwts.parserBuilder().setSigningKey(key()).build().parse(authToken);
-            return true;
+            Claims claims = Jwts.parserBuilder().setSigningKey(key()).build().parseClaimsJws(authToken).getBody();
+            String username = claims.getSubject();
+            Date expiration = claims.getExpiration();
+            return username.equals(getUserNameFromJwtToken(authToken)) &&  !expiration.before(new Date());
         } catch (MalformedJwtException e) {
             logger.error("Invalid JWT token: {}", e.getMessage());
         } catch (ExpiredJwtException e) {

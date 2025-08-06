@@ -27,7 +27,7 @@ public class AuthService {
     private UserRepository userRepository;
 
     @Autowired
-    private PasswordEncoder encoder;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     AuthenticationManager authenticationManager;
@@ -36,7 +36,7 @@ public class AuthService {
     JwtUtils jwtUtils;
 
     public User registerUser(RegisterRequest registerRequest) {
-        if (userRepository.existsByUsername(registerRequest.getUsername()))
+        if (userRepository.existsByUsername(registerRequest.username()))
             return null;
         User user = createUserFromRegisterRequest(registerRequest);
         userRepository.save(user);
@@ -44,25 +44,26 @@ public class AuthService {
     }
 
     private User createUserFromRegisterRequest(RegisterRequest registerRequest) {
-        return User.builder().username(registerRequest.getUsername())
-                .email(registerRequest.getEmail())
-                .password(encoder.encode(registerRequest.getPassword()))
-                .gender(!registerRequest.getGender().isEmpty()?registerRequest.getGender():null)
-                .name(!registerRequest.getName().isEmpty()?registerRequest.getName():null)
-                .phoneNumber(!registerRequest.getPhoneNumber().isEmpty()?registerRequest.getPhoneNumber():null)
+        return User.builder().username(registerRequest.username())
+                .email(registerRequest.email())
+                .password(passwordEncoder.encode(registerRequest.password()))
+                .gender(!registerRequest.gender().isEmpty()?registerRequest.gender():null)
+                .name(!registerRequest.name().isEmpty()?registerRequest.name():null)
+                .phoneNumber(!registerRequest.phoneNumber().isEmpty()?registerRequest.phoneNumber():null)
+                .role(registerRequest.role())
                 .build();
     }
 
     public JwtResponse authenticateUser(LoginRequest loginRequest) {
         //first, check if the user exists and is not marked as deleted
-        Optional<User> user = userRepository.findByUsernameAndDeletedIsFalse(loginRequest.getUsername());
+        Optional<User> user = userRepository.findByUsernameAndDeletedIsFalse(loginRequest.username());
         if(user.isEmpty())
             throw new UsernameNotFoundException("USER_NOT_FOUND");
 
         try{
             //try to authenticate the user using username and password
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+                    new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password()));
 
             //set the authenticated user in the security context
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -83,7 +84,8 @@ public class AuthService {
                     userDetails.getEmail(),
                     userDetails.getGender(),
                     userDetails.getName(),
-                    userDetails.getPhoneNumber());
+                    userDetails.getPhoneNumber(),
+                    userDetails.getAuthorities().get(0));
         }catch (BadCredentialsException e){
             throw new BadCredentialsException("WRONG_PASSWORD");
         }
